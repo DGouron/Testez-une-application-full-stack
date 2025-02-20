@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SessionServiceUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.services</a> &gt; <span class="el_source">SessionServiceUnitTests.java</span></div><h1>SessionServiceUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import com.openclassrooms.starterjwt.models.Session;
+import com.openclassrooms.starterjwt.models.Teacher;
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.repository.SessionRepository;
+import com.openclassrooms.starterjwt.repository.UserRepository;
+import com.openclassrooms.starterjwt.services.SessionService;
+
+/**
+ * This class contains unit tests for the {@link SessionService} class.
+ *
+ * It tests the functionality of creating, deleting, finding, updating,
+ * participating, and no
+ * longer participating in sessions.
+ *
+ *
+ * The tests use Mockito to mock the SessionRepository and UserRepository
+ * dependencies.
+ */
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L47">public class SessionServiceUnitTests {</span>
+    /**
+     * A mock instance of the SessionService class.
+     */
+    @InjectMocks
+    private SessionService sessionService;
+
+    /**
+     * A mock instance of the SessionRepository class.
+     */
+    @Mock
+    private SessionRepository sessionRepository;
+
+    /**
+     * A mock instance of the UserRepository class.
+     */
+    @Mock
+    private UserRepository userRepository;
+
+    /**
+     * An instance of the Session class used for testing.
+     */
+    private Session session;
+
+    /**
+     * Annotated with {@code @BeforeEach}, this method is executed before each test
+     * case. It
+     * sets up the necessary dependencies and initializes the session object.
+     */
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L78">        LocalDateTime currentTime = LocalDateTime.now();</span>
+<span class="fc" id="L79">        Date currentDate = Date.from(currentTime.atZone(ZoneId.systemDefault()).toInstant());</span>
+
+<span class="fc" id="L81">        Teacher teacher = new Teacher();</span>
+<span class="fc" id="L82">        teacher</span>
+<span class="fc" id="L83">                .setId(1L)</span>
+<span class="fc" id="L84">                .setLastName(&quot;DELAHAYE&quot;)</span>
+<span class="fc" id="L85">                .setFirstName(&quot;Margot&quot;)</span>
+<span class="fc" id="L86">                .setCreatedAt(currentTime)</span>
+<span class="fc" id="L87">                .setUpdatedAt(currentTime);</span>
+
+<span class="fc" id="L89">        User mockedUser = new User(&quot;Toto&quot;, &quot;Toto&quot;,</span>
+                &quot;Toto69&quot;, &quot;totoBruv&quot;, false);
+<span class="fc" id="L91">        mockedUser.setId(1L);</span>
+
+<span class="fc" id="L93">        List&lt;User&gt; arrayOfUsers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L94">        arrayOfUsers.add(mockedUser);</span>
+
+<span class="fc" id="L96">        session = new Session(1L, &quot;TEST session&quot;,</span>
+                currentDate, &quot;TEST description for the session&quot;,
+                teacher,
+                arrayOfUsers, currentTime,
+                currentTime);
+
+<span class="fc" id="L102">        sessionService = new SessionService(sessionRepository, userRepository);</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Tests the {@code create()} method of the
+     * SessionService class. It mocks the {@code save()} method of the
+     * sessionRepository to
+     * return the session object
+     * and verifies that the {@code save()} method is called.
+     *
+     * It asserts that the returned
+     * session object is equal to the original session object.
+     */
+    @Test
+    @Tag(&quot;SessionService.create()&quot;)
+    @DisplayName(&quot;Test Creating New Session&quot;)
+    public void testCreatingNewSession() {
+        // * Arrange
+<span class="fc" id="L120">        when(sessionRepository.save(session)).thenReturn(session);</span>
+
+        // * Act
+<span class="fc" id="L123">        Session result = sessionService.create(session);</span>
+
+        // * Assert
+<span class="fc" id="L126">        verify(sessionRepository).save(session);</span>
+
+<span class="fc" id="L128">        assertEquals(session, result);</span>
+<span class="fc" id="L129">    }</span>
+
+    /**
+     * Tests the {@code delete()} method of the SessionService class.
+     * It mocks the {@code deleteById()} method of the sessionRepository
+     * and verifies that the {@code deleteById()} method is called.
+     */
+    @Test
+    @Tag(&quot;SessionService.delete()&quot;)
+    @DisplayName(&quot;Test Deleting a Session&quot;)
+    public void testDeletingASession() {
+        // * Arrange
+<span class="fc" id="L141">        doNothing().when(sessionRepository).deleteById(session.getId());</span>
+
+        // * Act
+<span class="fc" id="L144">        sessionService.delete(session.getId());</span>
+
+        // * Assert
+<span class="fc" id="L147">        verify(sessionRepository).deleteById(session.getId());</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Tests the {@code findAll()} method of the SessionService class.
+     * It mocks the {@code findAll()} method of the sessionRepository
+     * to return a list of sessions and verifies that the {@code findAll()}
+     * method is called. It asserts that the returned list of sessions
+     * is equal to the original list of sessions.
+     */
+    @Test
+    @Tag(&quot;SessionService.findAll()&quot;)
+    @DisplayName(&quot;Test Finding All Sessions&quot;)
+    public void testFindingAllSessions() {
+        // * Arrange
+<span class="fc" id="L162">        List&lt;Session&gt; sessions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L163">        sessions.add(session);</span>
+<span class="fc" id="L164">        sessions.add(session);</span>
+
+<span class="fc" id="L166">        when(sessionRepository.findAll()).thenReturn(sessions);</span>
+
+        // * Act
+<span class="fc" id="L169">        List&lt;Session&gt; result = sessionService.findAll();</span>
+
+        // * Assert
+<span class="fc" id="L172">        verify(sessionRepository).findAll();</span>
+
+<span class="fc" id="L174">        assertEquals(sessions, result);</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Tests the {@code getById()} method of the SessionService class.
+     * It mocks the {@code findById()} method of the sessionRepository
+     * to return the session object and verifies that the {@code findById()}
+     * method is called. It asserts that the returned session object
+     * is equal to the original session object.
+     */
+    @Test
+    @Tag(&quot;SessionService.getById()&quot;)
+    @DisplayName(&quot;Test Get Session by Valid ID&quot;)
+    public void testGetSessionByValidId() {
+        // * Arrange
+<span class="fc" id="L189">        when(sessionRepository.findById(session.getId())).thenReturn(Optional.of(session));</span>
+
+        // * Act
+<span class="fc" id="L192">        Session result = sessionService.getById(session.getId());</span>
+
+        // * Assert
+<span class="fc" id="L195">        verify(sessionRepository).findById(session.getId());</span>
+
+<span class="fc" id="L197">        assertEquals(session, result);</span>
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Tests the {@code update()} method of the SessionService class.
+     * It mocks the {@code save()} method of the sessionRepository
+     * to return the session object and verifies that the {@code save()}
+     * method is called. It asserts that the returned session object
+     * is equal to the original session object.
+     */
+    @Test
+    @Tag(&quot;SessionService.update()&quot;)
+    @DisplayName(&quot;Test Updating a Session&quot;)
+    public void testUpdatingASession() {
+        // * Arrange
+<span class="fc" id="L212">        when(sessionRepository.save(session)).thenReturn(session);</span>
+
+        // * Act
+<span class="fc" id="L215">        Session result = sessionService.update(session.getId(), session);</span>
+
+        // * Assert
+<span class="fc" id="L218">        verify(sessionRepository).save(session);</span>
+
+<span class="fc" id="L220">        assertEquals(session, result);</span>
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Tests the {@code participate()} method of the SessionService class.
+     * It mocks the {@code findById()} method of the sessionRepository to return
+     * the session object. It mocks the {@code findById()} method of the
+     * userRepository
+     * to return the user object. It verifies that the {@code findById()} methods
+     * are called and asserts that the session's users list contains the user
+     * object.
+     */
+    @Test
+    @Tag(&quot;SessionService.participate()&quot;)
+    @DisplayName(&quot;Test Participate in a Session&quot;)
+    public void testParticipateSession() {
+        // * Arrange
+<span class="fc" id="L237">        Long userId = 69L;</span>
+<span class="fc" id="L238">        Long sessionId = 1L;</span>
+
+<span class="fc" id="L240">        User mockedUser = new User(&quot;Toto&quot;, &quot;Toto&quot;,</span>
+                &quot;Toto69&quot;, &quot;totoBruv&quot;, false);
+<span class="fc" id="L242">        mockedUser.setId(userId);</span>
+
+<span class="fc" id="L244">        when(sessionRepository.findById(sessionId)).thenReturn(Optional.of(session));</span>
+<span class="fc" id="L245">        when(userRepository.findById(userId)).thenReturn(Optional.of(mockedUser));</span>
+
+        // * Act
+<span class="fc" id="L248">        sessionService.participate(sessionId, userId);</span>
+
+        // * Assert
+<span class="fc" id="L251">        verify(sessionRepository).findById(sessionId);</span>
+<span class="fc" id="L252">        verify(userRepository).findById(userId);</span>
+
+<span class="fc" id="L254">        assertTrue(session.getUsers().contains(mockedUser));</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Tests the {@code noLongerParticipate()} method of the SessionService class.
+     * It mocks the {@code findById()} method of the sessionRepository to return the
+     * session object. It mocks the {@code save()} method of the sessionRepository
+     * to return the session object. It verifies that the {@code findById()} method
+     * is called and asserts that the session's users list does not contain the user
+     * object.
+     */
+    @Test
+    @Tag(&quot;SessionService.noLogerParticipate()&quot;)
+    @DisplayName(&quot;Test No Longer Participate in a Session&quot;)
+    public void testNoLongerParticipateSession() {
+        // * Arrange
+<span class="fc" id="L270">        Long userIdToRemove = 420L;</span>
+<span class="fc" id="L271">        Long sessionId = 1L;</span>
+
+<span class="fc" id="L273">        User mockedUser = new User(&quot;Toto2&quot;, &quot;Toto2&quot;,</span>
+                &quot;Toto420&quot;, &quot;totoBlud&quot;, false);
+<span class="fc" id="L275">        mockedUser.setId(userIdToRemove);</span>
+
+<span class="fc" id="L277">        session.getUsers().add(mockedUser);</span>
+
+<span class="fc" id="L279">        when(sessionRepository.findById(sessionId)).thenReturn(Optional.of(session));</span>
+<span class="fc" id="L280">        when(sessionRepository.save(session)).thenReturn(session);</span>
+
+        // * Act
+<span class="fc" id="L283">        sessionService.noLongerParticipate(sessionId, userIdToRemove);</span>
+
+        // * Assert
+<span class="fc" id="L286">        verify(sessionRepository).findById(sessionId);</span>
+
+<span class="fc" id="L288">        assertFalse(session.getUsers().contains(mockedUser));</span>
+<span class="fc" id="L289">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

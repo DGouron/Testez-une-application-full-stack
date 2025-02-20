@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserDetailsImplUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.security.services</a> &gt; <span class="el_source">UserDetailsImplUnitTests.java</span></div><h1>UserDetailsImplUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.security.services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collection;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.GrantedAuthority;
+
+import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+
+/**
+ * Unit tests for the {@link UserDetailsImpl} class.
+ */
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L29">public class UserDetailsImplUnitTests {</span>
+    /**
+     * A mock instance of the {@link UserDetailsImpl} class.
+     */
+    @InjectMocks
+    private UserDetailsImpl userDetails;
+
+    /**
+     * Sets up the mock {@link UserDetailsImpl} instance before each test case.
+     */
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L41">        userDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L42">                .id(1L)</span>
+<span class="fc" id="L43">                .username(&quot;testuser&quot;)</span>
+<span class="fc" id="L44">                .firstName(&quot;John&quot;)</span>
+<span class="fc" id="L45">                .lastName(&quot;Doe&quot;)</span>
+<span class="fc" id="L46">                .admin(false)</span>
+<span class="fc" id="L47">                .password(&quot;testPassword&quot;)</span>
+<span class="fc" id="L48">                .build();</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * Test construction of UserDetailsImpl and its getters.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.Construction&quot;)
+    @DisplayName(&quot;Test UserDetailsImpl construction and getters&quot;)
+    void testUserDetailsConstructionAndGetters() {
+<span class="fc" id="L58">        assertEquals(1L, userDetails.getId());</span>
+<span class="fc" id="L59">        assertEquals(&quot;testuser&quot;, userDetails.getUsername());</span>
+<span class="fc" id="L60">        assertEquals(&quot;John&quot;, userDetails.getFirstName());</span>
+<span class="fc" id="L61">        assertEquals(&quot;Doe&quot;, userDetails.getLastName());</span>
+<span class="fc" id="L62">        assertFalse(userDetails.getAdmin());</span>
+<span class="fc" id="L63">        assertEquals(&quot;testPassword&quot;, userDetails.getPassword());</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Tests the {@link UserDetailsImpl#getAuthorities()} method.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.getAuthorities()&quot;)
+    @DisplayName(&quot;Test getAuthorities method&quot;)
+    void testGetAuthorities() {
+<span class="fc" id="L73">        Collection&lt;? extends GrantedAuthority&gt; authorities = userDetails.getAuthorities();</span>
+<span class="fc" id="L74">        assertNotNull(authorities);</span>
+<span class="fc" id="L75">        assertTrue(authorities.isEmpty());</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Test the {@code isAccountNonExpired()} method.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.isAccountNonExpired()&quot;)
+    @DisplayName(&quot;Test isAccountNonExpired method&quot;)
+    void testIsAccountNonExpired() {
+<span class="fc" id="L85">        assertTrue(userDetails.isAccountNonExpired());</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Test the {@code isAccountNonLocked()} method.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.isAccountNonLocked()&quot;)
+    @DisplayName(&quot;Test isAccountNonLocked method&quot;)
+    void testIsAccountNonLocked() {
+<span class="fc" id="L95">        assertTrue(userDetails.isAccountNonLocked());</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Test the {@code isCredentialsNonExpired()} method.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.isCredentialsNonExpired()&quot;)
+    @DisplayName(&quot;Test isCredentialsNonExpired method&quot;)
+    void testIsCredentialsNonExpired() {
+<span class="fc" id="L105">        assertTrue(userDetails.isCredentialsNonExpired());</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Test the {@code isEnabled()} method.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.isEnabled()&quot;)
+    @DisplayName(&quot;Test isEnabled method&quot;)
+    void testIsEnabled() {
+<span class="fc" id="L115">        assertTrue(userDetails.isEnabled());</span>
+<span class="fc" id="L116">    }</span>
+
+    /**
+     * Test the {@code equals()} method with the same user.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.equals()&quot;)
+    @DisplayName(&quot;Test equals method with the same user&quot;)
+    void testEqualsSameUser() {
+<span class="fc" id="L125">        UserDetailsImpl sameUser = UserDetailsImpl.builder()</span>
+<span class="fc" id="L126">                .id(1L)</span>
+<span class="fc" id="L127">                .username(&quot;testuser&quot;)</span>
+<span class="fc" id="L128">                .firstName(&quot;John&quot;)</span>
+<span class="fc" id="L129">                .lastName(&quot;Doe&quot;)</span>
+<span class="fc" id="L130">                .admin(false)</span>
+<span class="fc" id="L131">                .password(&quot;testPassword&quot;)</span>
+<span class="fc" id="L132">                .build();</span>
+<span class="fc" id="L133">        assertTrue(userDetails.equals(sameUser));</span>
+<span class="fc" id="L134">    }</span>
+
+    /**
+     * Test the {@code equals()} method with a different user.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.equals()&quot;)
+    @DisplayName(&quot;Test equals method with different user&quot;)
+    void testEqualsDifferentUser() {
+<span class="fc" id="L143">        UserDetailsImpl differentUser = UserDetailsImpl.builder()</span>
+<span class="fc" id="L144">                .id(2L)</span>
+<span class="fc" id="L145">                .username(&quot;anotheruser&quot;)</span>
+<span class="fc" id="L146">                .firstName(&quot;Jane&quot;)</span>
+<span class="fc" id="L147">                .lastName(&quot;Doe&quot;)</span>
+<span class="fc" id="L148">                .admin(true)</span>
+<span class="fc" id="L149">                .password(&quot;differentPassword&quot;)</span>
+<span class="fc" id="L150">                .build();</span>
+<span class="fc" id="L151">        assertFalse(userDetails.equals(differentUser));</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Test the {@code equals()} method with a non-UserDetails object.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.equals()&quot;)
+    @DisplayName(&quot;Test equals method with non-UserDetails object&quot;)
+    void testEqualsNonUserDetailsObject() {
+<span class="fc" id="L161">        Object nonUserDetailsObject = new Object();</span>
+<span class="fc" id="L162">        assertFalse(userDetails.equals(nonUserDetailsObject));</span>
+<span class="fc" id="L163">    }</span>
+
+    /**
+     * Test the {@code equals()} method with null.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.equals()&quot;)
+    @DisplayName(&quot;Test equals method with null&quot;)
+    void testEqualsWithNull() {
+<span class="fc" id="L172">        assertFalse(userDetails.equals(null));</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Test the {@code hashCode()} method.
+     */
+    @Test
+    @Tag(&quot;UserDetailsImpl.hashCode()&quot;)
+    @DisplayName(&quot;Test hashCode method&quot;)
+    void testHashCode() {
+<span class="fc" id="L182">        UserDetailsImpl differentUserDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L183">                .id(1L)</span>
+<span class="fc" id="L184">                .username(&quot;testuser&quot;)</span>
+<span class="fc" id="L185">                .firstName(&quot;John&quot;)</span>
+<span class="fc" id="L186">                .lastName(&quot;Doe&quot;)</span>
+<span class="fc" id="L187">                .admin(false)</span>
+<span class="fc" id="L188">                .password(&quot;testPassword&quot;)</span>
+<span class="fc" id="L189">                .build();</span>
+
+<span class="fc" id="L191">        assertNotEquals(userDetails.hashCode(), differentUserDetails.hashCode());</span>
+<span class="fc" id="L192">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TeacherServiceUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.services</a> &gt; <span class="el_source">TeacherServiceUnitTests.java</span></div><h1>TeacherServiceUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import com.openclassrooms.starterjwt.models.Teacher;
+import com.openclassrooms.starterjwt.repository.TeacherRepository;
+import com.openclassrooms.starterjwt.services.TeacherService;
+
+/**
+ * Unit tests for the {@link TeacherService} class.
+ *
+ * It tests the functionality of finding teachers by ID and retrieving all
+ * teachers.
+ *
+ * The tests use Mockito to mock the TeacherRepository dependency.
+ */
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L37">public class TeacherServiceUnitTests {</span>
+
+    /**
+     * A mock instance of the TeacherService class.
+     */
+    @InjectMocks
+    private TeacherService teacherService;
+
+    /**
+     * A mock instance of the TeacherRepository class.
+     */
+    @Mock
+    private TeacherRepository teacherRepository;
+
+    /**
+     * Annotated with {@code @BeforeEach}, this method is executed before each
+     * test
+     * case. It
+     * sets up the necessary dependencies and initializes the session object.
+     */
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L59">        teacherService = new TeacherService(teacherRepository);</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Tests the {@code findAll()} method of the TeacherService class.
+     * It mocks the {@code findAll()} method of the teacherRepository
+     * to return a list of teachers and verifies that the {@code findAll()}
+     * method is called. It asserts that the returned list of teachers
+     * is equal to the original list of teachers.
+     */
+    @Test
+    @Tag(&quot;TeacherService.findAll()&quot;)
+    @DisplayName(&quot;Find all teachers&quot;)
+    public void testFindAllTeachers() {
+        // * Arrange
+<span class="fc" id="L74">        LocalDateTime localDateTime = LocalDateTime.now();</span>
+
+<span class="fc" id="L76">        List&lt;Teacher&gt; teachers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L77">        Teacher teacher1 = new Teacher();</span>
+<span class="fc" id="L78">        teacher1</span>
+<span class="fc" id="L79">                .setId(1L)</span>
+<span class="fc" id="L80">                .setLastName(&quot;DELAHAYE&quot;)</span>
+<span class="fc" id="L81">                .setFirstName(&quot;Margot&quot;)</span>
+<span class="fc" id="L82">                .setCreatedAt(localDateTime)</span>
+<span class="fc" id="L83">                .setUpdatedAt(localDateTime);</span>
+
+<span class="fc" id="L85">        Teacher teacher2 = new Teacher();</span>
+<span class="fc" id="L86">        teacher2</span>
+<span class="fc" id="L87">                .setId(2L)</span>
+<span class="fc" id="L88">                .setLastName(&quot;THIERCELIN&quot;)</span>
+<span class="fc" id="L89">                .setFirstName(&quot;Hélène&quot;)</span>
+<span class="fc" id="L90">                .setCreatedAt(localDateTime)</span>
+<span class="fc" id="L91">                .setUpdatedAt(localDateTime);</span>
+
+<span class="fc" id="L93">        teachers.add(teacher1);</span>
+<span class="fc" id="L94">        teachers.add(teacher2);</span>
+
+<span class="fc" id="L96">        when(teacherRepository.findAll()).thenReturn(teachers);</span>
+
+        // * Act
+<span class="fc" id="L99">        List&lt;Teacher&gt; result = teacherService.findAll();</span>
+
+        // * Assert
+<span class="fc" id="L102">        verify(teacherRepository).findAll();</span>
+
+<span class="fc" id="L104">        assertEquals(teachers, result);</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Tests the {@code findById()} method of the TeacherService class.
+     * It mocks the {@code findById()} method of the teacherRepository
+     * to return a teacher object and verifies that the {@code findById()}
+     * method is called. It asserts that the returned teacher object
+     * is equal to the original teacher object.
+     */
+    @Test
+    @Tag(&quot;TeacherService.findById()&quot;)
+    @DisplayName(&quot;Find teacher by ID → found&quot;)
+    public void testFindTeacherById() {
+        // * Arrange
+<span class="fc" id="L119">        LocalDateTime localDateTime = LocalDateTime.now();</span>
+
+<span class="fc" id="L121">        Long teacherId = 1L;</span>
+<span class="fc" id="L122">        Teacher teacher = new Teacher();</span>
+<span class="fc" id="L123">        teacher</span>
+<span class="fc" id="L124">                .setId(1L)</span>
+<span class="fc" id="L125">                .setLastName(&quot;DELAHAYE&quot;)</span>
+<span class="fc" id="L126">                .setFirstName(&quot;Margot&quot;)</span>
+<span class="fc" id="L127">                .setCreatedAt(localDateTime)</span>
+<span class="fc" id="L128">                .setUpdatedAt(localDateTime);</span>
+
+<span class="fc" id="L130">        when(teacherRepository.findById(teacherId)).thenReturn(Optional.of(teacher));</span>
+
+        // * Act
+<span class="fc" id="L133">        Teacher result = teacherService.findById(teacherId);</span>
+
+        // * Assert
+<span class="fc" id="L136">        verify(teacherRepository).findById(teacherId);</span>
+
+<span class="fc" id="L138">        assertEquals(teacher, result);</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Tests the {@code findById()} method of the TeacherService class when the
+     * teacher is not found.
+     * It mocks the {@code findById()} method of the teacherRepository
+     * to return an empty optional and verifies that the {@code findById()}
+     * method is called. It asserts that the returned teacher object is null.
+     */
+    @Test
+    @Tag(&quot;TeacherService.findById()&quot;)
+    @DisplayName(&quot;Find teacher by ID → not found&quot;)
+    public void testFindTeacherByIdNotFound() {
+        // * Arrange
+<span class="fc" id="L153">        Long teacherId = 1L;</span>
+
+<span class="fc" id="L155">        when(teacherRepository.findById(teacherId)).thenReturn(Optional.empty());</span>
+
+        // * Act
+<span class="fc" id="L158">        Teacher result = teacherService.findById(teacherId);</span>
+
+        // * Assert
+<span class="fc" id="L161">        verify(teacherRepository).findById(teacherId);</span>
+
+<span class="fc" id="L163">        assertNull(result);</span>
+<span class="fc" id="L164">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

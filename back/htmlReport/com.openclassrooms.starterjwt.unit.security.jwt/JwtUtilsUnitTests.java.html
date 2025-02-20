@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtUtilsUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.security.jwt</a> &gt; <span class="el_source">JwtUtilsUnitTests.java</span></div><h1>JwtUtilsUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.security.jwt;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+
+import java.util.Date;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.security.core.Authentication;
+
+import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
+import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+
+
+/**
+ * Unit tests for the {@link JwtUtils} class.
+ */
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L38">public class JwtUtilsUnitTests {</span>
+    /**
+     * Mocked authentication instance for simulating user authentication.
+     */
+    @Mock
+    private Authentication authentication;
+
+    /**
+     * Instance of JwtUtils for testing.
+     */
+    @InjectMocks
+    private JwtUtils jwtUtils;
+
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L53">        jwtUtils = new JwtUtils();</span>
+<span class="fc" id="L54">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtSecret&quot;, &quot;testSecret&quot;);</span>
+<span class="fc" id="L55">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtExpirationMs&quot;, 3_600_000); // 1 hour</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Test generating a JWT token.
+     */
+    @Test
+    @DisplayName(&quot;Test generating JWT token&quot;)
+    void testGenerateJwtToken() {
+        // Mocking Authentication
+<span class="fc" id="L65">        UserDetailsImpl userDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L66">                .id(1L)</span>
+<span class="fc" id="L67">                .firstName(&quot;Toto&quot;)</span>
+<span class="fc" id="L68">                .lastName(&quot;Toto&quot;)</span>
+<span class="fc" id="L69">                .username(&quot;toto3@toto.com&quot;)</span>
+<span class="fc" id="L70">                .password(&quot;test!1234&quot;)</span>
+<span class="fc" id="L71">                .build();</span>
+
+<span class="fc" id="L73">        when(authentication.getPrincipal()).thenReturn(userDetails);</span>
+
+<span class="fc" id="L75">        String token = jwtUtils.generateJwtToken(authentication);</span>
+
+<span class="fc" id="L77">        assertNotNull(token);</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        assertTrue(token.length() &gt; 0);</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    @DisplayName(&quot;Test getting username from JWT token&quot;)
+    void testGetUserNameFromJwtToken() {
+        // Sample user details using the builder pattern
+<span class="fc" id="L85">        UserDetailsImpl userDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L86">                .id(1L)</span>
+<span class="fc" id="L87">                .username(&quot;testUser&quot;)</span>
+<span class="fc" id="L88">                .password(&quot;password&quot;)</span>
+<span class="fc" id="L89">                .build();</span>
+
+        // Generate a JWT token
+<span class="fc" id="L92">        String validToken = Jwts.builder()</span>
+<span class="fc" id="L93">                .setSubject(userDetails.getUsername())</span>
+<span class="fc" id="L94">                .setIssuedAt(new Date())</span>
+<span class="fc" id="L95">                .setExpiration(new Date(System.currentTimeMillis() + 3_600_000)) // 1 hour</span>
+<span class="fc" id="L96">                .signWith(SignatureAlgorithm.HS512, &quot;testSecret&quot;)</span>
+<span class="fc" id="L97">                .compact();</span>
+
+        // Perform the test
+<span class="fc" id="L100">        String username = jwtUtils.getUserNameFromJwtToken(validToken);</span>
+
+        // Assert the result
+<span class="fc" id="L103">        assertEquals(&quot;testUser&quot;, username);</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    @DisplayName(&quot;Test validating JWT token&quot;)
+    void testValidateJwtToken() {
+        // Create a valid token for testing
+<span class="fc" id="L110">        UserDetailsImpl userDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L111">                .id(1L)</span>
+<span class="fc" id="L112">                .username(&quot;testUser&quot;)</span>
+<span class="fc" id="L113">                .password(&quot;password&quot;)</span>
+<span class="fc" id="L114">                .build();</span>
+
+<span class="fc" id="L116">        String validToken = Jwts.builder()</span>
+<span class="fc" id="L117">                .setSubject(userDetails.getUsername())</span>
+<span class="fc" id="L118">                .setIssuedAt(new Date())</span>
+<span class="fc" id="L119">                .setExpiration(new Date(System.currentTimeMillis() + 3_600_000)) // 1 hour</span>
+<span class="fc" id="L120">                .signWith(SignatureAlgorithm.HS512, &quot;testSecret&quot;)</span>
+<span class="fc" id="L121">                .compact();</span>
+
+        // Create a new JwtUtils instance
+<span class="fc" id="L124">        JwtUtils jwtUtils = new JwtUtils();</span>
+<span class="fc" id="L125">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtSecret&quot;, &quot;testSecret&quot;);</span>
+<span class="fc" id="L126">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtExpirationMs&quot;, 3_600_000);</span>
+
+        // Attempt to validate the token
+<span class="fc" id="L129">        boolean isValid = jwtUtils.validateJwtToken(validToken);</span>
+
+        // Assert that the token is valid
+<span class="fc" id="L132">        assertTrue(isValid);</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Test validating an invalid JWT token with an invalid signature.
+     */
+    @Test
+    @DisplayName(&quot;Test validating an invalid JWT token with invalid signature&quot;)
+    void testValidateJwtTokenInvalidSignature() {
+        // Create an invalid token for testing
+<span class="fc" id="L142">        String invalidToken = &quot;invalidToken&quot;;</span>
+
+        // Create a new JwtUtils instance
+<span class="fc" id="L145">        JwtUtils jwtUtils = new JwtUtils();</span>
+<span class="fc" id="L146">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtSecret&quot;, &quot;testSecret&quot;);</span>
+<span class="fc" id="L147">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtExpirationMs&quot;, 3_600_000);</span>
+
+        // Attempt to validate the invalid token
+<span class="fc" id="L150">        boolean isValid = jwtUtils.validateJwtToken(invalidToken);</span>
+
+        // Assert that the token is invalid
+<span class="fc" id="L153">        assertFalse(isValid);</span>
+<span class="fc" id="L154">    }</span>
+
+    @Test
+    @DisplayName(&quot;Test validating JWT token with MalformedJwtException&quot;)
+    void testValidateJwtTokenMalformedJwtException() {
+<span class="fc" id="L159">        String invalidToken = &quot;invalidToken&quot;;</span>
+<span class="fc" id="L160">        JwtUtils jwtUtilsMock = Mockito.mock(JwtUtils.class);</span>
+<span class="fc" id="L161">        doThrow(new MalformedJwtException(&quot;Invalid JWT token&quot;)).when(jwtUtilsMock).validateJwtToken(invalidToken);</span>
+<span class="pc" id="L162">        assertThrows(MalformedJwtException.class, () -&gt; jwtUtilsMock.validateJwtToken(invalidToken));</span>
+<span class="fc" id="L163">    }</span>
+
+    @Test
+    @DisplayName(&quot;Test validating JWT token with SignatureException&quot;)
+    void testValidateJwtTokenSignatureException() {
+<span class="fc" id="L168">        JwtUtils jwtUtils = new JwtUtils();</span>
+<span class="fc" id="L169">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtSecret&quot;, &quot;testSecret&quot;);</span>
+<span class="fc" id="L170">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtExpirationMs&quot;, 3_600_000);</span>
+
+        // Create an invalid token for testing
+<span class="fc" id="L173">        String invalidToken = &quot;invalidToken&quot;;</span>
+        // Attempt to validate the invalid token
+<span class="fc" id="L175">        boolean isValid = jwtUtils.validateJwtToken(invalidToken);</span>
+
+        // Assert that the token is invalid
+<span class="fc" id="L178">        assertFalse(isValid);</span>
+<span class="fc" id="L179">    }</span>
+
+    @Test
+    @DisplayName(&quot;Test validating JWT token with ExpiredJwtException&quot;)
+    void testValidateJwtTokenExpiredJwtException() {
+<span class="fc" id="L184">        JwtUtils jwtUtils = new JwtUtils();</span>
+<span class="fc" id="L185">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtSecret&quot;, &quot;testSecret&quot;);</span>
+<span class="fc" id="L186">        ReflectionTestUtils.setField(jwtUtils, &quot;jwtExpirationMs&quot;, 3_600_000);</span>
+
+        // Create an expired token for testing
+<span class="fc" id="L189">        String expiredToken = Jwts.builder()</span>
+<span class="fc" id="L190">                .setSubject(&quot;testUser&quot;)</span>
+<span class="fc" id="L191">                .setIssuedAt(new Date())</span>
+<span class="fc" id="L192">                .setExpiration(new Date(System.currentTimeMillis() - 1000)) // Expired token</span>
+<span class="fc" id="L193">                .signWith(SignatureAlgorithm.HS512, &quot;testSecret&quot;)</span>
+<span class="fc" id="L194">                .compact();</span>
+
+        // Attempt to validate the invalid token
+<span class="fc" id="L197">        boolean isValid = jwtUtils.validateJwtToken(expiredToken);</span>
+
+        // Assert that the token is invalid
+<span class="fc" id="L200">        assertFalse(isValid);</span>
+<span class="fc" id="L201">    }</span>
+
+    @Test
+    @DisplayName(&quot;Test validating JWT token with IllegalArgumentException&quot;)
+    void testValidateJwtTokenIllegalArgumentException() {
+        try {
+
+<span class="fc" id="L208">            JwtUtils jwtUtils = new JwtUtils();</span>
+
+            // Create a token with empty claims for testing
+<span class="fc" id="L211">            String invalidToken = Jwts.builder()</span>
+<span class="nc" id="L212">                    .claim(null, jwtUtils)</span>
+<span class="nc" id="L213">                    .setSubject(&quot;testUser&quot;)</span>
+<span class="nc" id="L214">                    .signWith(SignatureAlgorithm.HS512, &quot;testSecret&quot;)</span>
+<span class="nc" id="L215">                    .compact();</span>
+
+<span class="nc" id="L217">            assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L218">                    () -&gt; jwtUtils.validateJwtToken(invalidToken));</span>
+<span class="fc" id="L219">        } catch (IllegalArgumentException e) {</span>
+            // Assert that the exception message contains the expected error message
+<span class="fc" id="L221">            assertTrue(e.getMessage().contains(&quot;Claim property name cannot be null or empty.&quot;));</span>
+<span class="nc" id="L222">        }</span>
+
+<span class="fc" id="L224">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

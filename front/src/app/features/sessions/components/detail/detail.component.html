@@ -14,11 +14,13 @@
             <span class="ml1">Delete</span>
           </button>
           <div *ngIf="!isAdmin">
-            <button *ngIf="!isParticipate" mat-raised-button color="primary" (click)="participate()">
+            <button data-cy="participate-button" *ngIf="!isParticipate" mat-raised-button color="primary"
+              (click)="participate()">
               <mat-icon>person_add</mat-icon>
               <span class="ml1">Participate</span>
             </button>
-            <button *ngIf="isParticipate" mat-raised-button color="warn" (click)="unParticipate()">
+            <button data-cy="not-participate-button" *ngIf="isParticipate" mat-raised-button color="warn"
+              (click)="unParticipate()">
               <mat-icon>person_remove</mat-icon>
               <span class="ml1">Do not participate</span>
             </button>

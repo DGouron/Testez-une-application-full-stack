@@ -1,72 +1,102 @@
-# Yoga
+# Yoga App - Frontend
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.1.0.
+Ce projet est le frontend d'une application de gestion de cours de yoga développée avec Angular 14.
 
-## Start the project
+## Prérequis
 
-Git clone:
+- Node.js (version 14+)
+- npm
+- Angular CLI 14.1.0
 
-> git clone https://github.com/OpenClassrooms-Student-Center/P5-Full-Stack-testing
+## Installation
 
-Go inside folder:
+1. Cloner le projet
+```bash
+git clone <url-du-projet>
+```
 
-> cd yoga
+2. Se placer dans le dossier du projet
+```bash
+cd yoga
+```
 
-Install dependencies:
+3. Installer les dépendances
+```bash
+npm install
+```
 
-> npm install
+## Lancement de l'application
 
-Launch Front-end:
+Pour démarrer l'application en mode développement :
+```bash
+npm run start
+```
 
-> npm run start;
+L'application sera accessible à l'adresse : `http://localhost:4200`
 
+## Tests
+
+### Tests Unitaires (Jest)
+
+Pour lancer les tests unitaires :
+```bash
+npm run test
+```
+
+Pour lancer les tests en mode watch :
+```bash
+npm run test:watch
+```
+
+Le rapport de couverture sera généré dans le dossier `coverage/jest`.
+
+### Tests End-to-End (Cypress)
+
+Pour lancer les tests E2E :
+```bash
+npm run e2e
+```
+
+Pour générer le rapport de couverture E2E :
+```bash
+npm run e2e:coverage
+```
+
+Le rapport de couverture E2E sera disponible dans :
+```
+coverage/lcov-report/index.html
+```
 
 ## Ressources
 
-### Mockoon env 
+### Collection Postman
 
-### Postman collection
+Pour importer la collection Postman :
+1. Utiliser le fichier : `ressources/postman/yoga.postman_collection.json`
+2. Suivre la documentation : [Importing data into Postman](https://learning.postman.com/docs/getting-started/importing-and-exporting-data/#importing-data-into-postman)
 
-For Postman import the collection
+### Base de données MySQL
 
-> ressources/postman/yoga.postman_collection.json 
+Le script SQL pour créer le schéma est disponible dans : `ressources/sql/script.sql`
 
-by following the documentation: 
+### Compte administrateur par défaut
 
-https://learning.postman.com/docs/getting-started/importing-and-exporting-data/#importing-data-into-postman
+- Login : yoga@studio.com
+- Mot de passe : test!1234
 
+## Structure du Projet
 
-### MySQL
+- `src/app/` : Code source principal
+  - `components/` : Composants Angular
+  - `services/` : Services
+  - `models/` : Interfaces et modèles
+  - `guards/` : Guards d'authentification
 
-SQL script for creating the schema is available `ressources/sql/script.sql`
+- `src/assets/` : Ressources statiques
 
-By default the admin account is:
-- login: yoga@studio.com
-- password: test!1234
+- `cypress/` : Tests E2E
+  - `e2e/` : Spécifications des tests
+  - `fixtures/` : Données de test
+  - `support/` : Commandes et configurations
 
-
-### Test
-
-#### E2E
-
-Launching e2e test:
-
-> npm run e2e
-
-Generate coverage report (you should launch e2e test before):
-
-> npm run e2e:coverage
-
-Report is available here:
-
-> front/coverage/lcov-report/index.html
-
-#### Unitary test
-
-Launching test:
-
-> npm run test
-
-for following change:
-
-> npm run test:watch
+- `src/test/` : Tests unitaires

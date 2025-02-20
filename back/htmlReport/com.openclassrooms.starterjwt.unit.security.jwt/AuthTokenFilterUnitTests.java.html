@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthTokenFilterUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.security.jwt</a> &gt; <span class="el_source">AuthTokenFilterUnitTests.java</span></div><h1>AuthTokenFilterUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.security.jwt;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import java.io.IOException;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+
+import com.openclassrooms.starterjwt.security.jwt.AuthTokenFilter;
+import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
+import com.openclassrooms.starterjwt.security.services.UserDetailsServiceImpl;
+
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L31">public class AuthTokenFilterUnitTests {</span>
+
+    /**
+     * Mocked authentication manager for simulating user authentication.
+     */
+    @Mock
+    private JwtUtils jwtUtils;
+
+    /**
+     * Mocked instance of the AuthTokenFilter class.
+     */
+    @InjectMocks
+    private AuthTokenFilter authTokenFilter;
+
+    /**
+     * Mocked instance of the UserDetailsServiceImpl class.
+     */
+    @Mock
+    private UserDetailsServiceImpl userDetailsService;
+
+    /**
+     * Tests the {@code doFilterInternal} method of AuthTokenFilter when a valid
+     * token is provided.
+     */
+    @Test
+    @Tag(&quot;AuthTokenFilter.doFilterInternal()&quot;)
+    @DisplayName(&quot;Test Authentication with Valid Token&quot;)
+    void doFilterInternal_validToken_shouldSetAuthentication() throws ServletException, IOException {
+<span class="fc" id="L59">        HttpServletRequest request = mock(HttpServletRequest.class);</span>
+<span class="fc" id="L60">        HttpServletResponse response = mock(HttpServletResponse.class);</span>
+<span class="fc" id="L61">        FilterChain filterChain = mock(FilterChain.class);</span>
+
+<span class="fc" id="L63">        authTokenFilter.doFilterInternal(request, response, filterChain);</span>
+
+<span class="fc" id="L65">        verify(filterChain).doFilter(request, response);</span>
+<span class="fc" id="L66">    }</span>
+
+    /**
+     * Tests the {@code doFilterInternal} method of AuthTokenFilter when an invalid
+     * token is provided.
+     */
+    @Test
+    @Tag(&quot;AuthTokenFilter.doFilterInternal()&quot;)
+    @DisplayName(&quot;Test No Authentication with Invalid Token&quot;)
+    void doFilterInternal_invalidToken_shouldNotSetAuthentication() throws ServletException, IOException {
+<span class="fc" id="L76">        HttpServletRequest request = mock(HttpServletRequest.class);</span>
+<span class="fc" id="L77">        HttpServletResponse response = mock(HttpServletResponse.class);</span>
+<span class="fc" id="L78">        FilterChain filterChain = mock(FilterChain.class);</span>
+
+<span class="fc" id="L80">        authTokenFilter.doFilterInternal(request, response, filterChain);</span>
+
+<span class="fc" id="L82">        assertEquals(SecurityContextHolder.getContext().getAuthentication(), null);</span>
+<span class="fc" id="L83">        verify(filterChain).doFilter(request, response);</span>
+<span class="fc" id="L84">    }</span>
+
+    // Add more test cases as needed
+
+    /**
+     * Tests the {@code parseJwt} method of AuthTokenFilter with a valid header.
+     */
+    @Test
+    @Tag(&quot;AuthTokenFilter.parseJwt()&quot;)
+    @DisplayName(&quot;Test Parsing Valid JWT Token from Header&quot;)
+    void parseJwt_validHeader_shouldReturnToken() {
+<span class="fc" id="L95">        MockHttpServletRequest request = new MockHttpServletRequest();</span>
+<span class="fc" id="L96">        request.addHeader(&quot;Authorization&quot;, &quot;Bearer testToken&quot;);</span>
+
+<span class="fc" id="L98">        String result = authTokenFilter.parseJwt(request);</span>
+
+<span class="fc" id="L100">        assertEquals(&quot;testToken&quot;, result);</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Tests the {@code parseJwt} method of AuthTokenFilter with an invalid header.
+     */
+    @Test
+    @Tag(&quot;AuthTokenFilter.parseJwt()&quot;)
+    @DisplayName(&quot;Test Parsing Null from Invalid JWT Token Header&quot;)
+    void parseJwt_invalidHeader_shouldReturnNull() {
+<span class="fc" id="L110">        MockHttpServletRequest request = new MockHttpServletRequest();</span>
+
+<span class="fc" id="L112">        String result = authTokenFilter.parseJwt(request);</span>
+
+<span class="fc" id="L114">        assertEquals(null, result);</span>
+<span class="fc" id="L115">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

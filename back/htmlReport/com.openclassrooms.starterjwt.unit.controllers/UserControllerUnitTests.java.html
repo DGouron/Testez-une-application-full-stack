@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserControllerUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.controllers</a> &gt; <span class="el_source">UserControllerUnitTests.java</span></div><h1>UserControllerUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.controllers;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import com.openclassrooms.starterjwt.controllers.UserController;
+import com.openclassrooms.starterjwt.dto.UserDto;
+import com.openclassrooms.starterjwt.mapper.UserMapper;
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.repository.UserRepository;
+import com.openclassrooms.starterjwt.services.UserService;
+
+/**
+ * @implSpec The tests cover both the happy path scenarios and edge cases,
+ *           asserting the expected outcomes for each endpoint.
+ * @implSpec All tests focus on the functionality of the
+ *           {@link UserController} in handling teacher-related operations.
+ * @implNote The class utilizes JUnit 5 and Mockito for testing.
+ *
+ * @author Younes LAHOUITI
+ * @version 1.0
+ * @since 2024-01-05
+ */
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+@DisplayName(&quot;User controller test: api/user&quot;)
+<span class="fc" id="L45">public class UserControllerUnitTests {</span>
+    /**
+     * The logger instance for logging test-related information.
+     */
+<span class="fc" id="L49">    private static final Logger logger = LoggerFactory.getLogger(UserController.class);</span>
+
+    /**
+     * The controller under test, injected with mock dependencies.
+     */
+    @InjectMocks
+    private UserController userController;
+
+    /**
+     * Mocked user repository for handling user data during tests.
+     */
+    @Mock
+    private UserRepository userRepository;
+
+    /**
+     * Mocked service for simulating interactions with the user database.
+     */
+    @MockBean
+    private UserService userService;
+
+    /**
+     * Mocked mapper for converting between User entities and DTOs.
+     */
+    @MockBean
+    private UserMapper userMapper;
+
+    /**
+     * Set up the test environment before each test case by initializing the
+     * {@link UserController}.
+     * This method creates a new instance of the {@code UserController} with the
+     * provided mock dependencies,
+     * including a user service, user mapper, and mockMvc for simulating HTTP
+     * requests and responses.
+     * The initialized controller is then used in each test case to evaluate the
+     * behavior of the user-related endpoints.
+     *
+     */
+    @BeforeEach
+    void setUp() {
+        // Initialize the controller with mock dependencies
+<span class="fc" id="L89">        userController = new UserController(userService, userMapper);</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Test case for retrieving a user with the given existing ID.
+     * It should return a 200 status code.
+     */
+    @Test
+    @Tag(&quot;get_api/user/{id}&quot;)
+    @DisplayName(&quot;(HAPPY PATH) it should get the user from the database of the given id&quot;)
+    public void getUserById_shouldReturnUserWithGivenId() {
+        // * Arrange
+<span class="fc" id="L101">        User mockUser = new User();</span>
+<span class="fc" id="L102">        mockUser.setId(1L);</span>
+<span class="fc" id="L103">        mockUser.setEmail(&quot;test@example.com&quot;);</span>
+
+<span class="fc" id="L105">        when(userService.findById(1L)).thenReturn(mockUser);</span>
+<span class="fc" id="L106">        when(userMapper.toDto(mockUser)).thenReturn(new UserDto());</span>
+
+        // * Act
+<span class="fc" id="L109">        ResponseEntity&lt;?&gt; result = userController.findById(&quot;1&quot;);</span>
+
+        // * Assert
+<span class="fc" id="L112">        assertEquals(HttpStatus.OK, result.getStatusCode());</span>
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Test case for retrieving a user with an invalid ID.
+     * It should return a 400 error status code.
+     */
+    @Test
+    @Tag(&quot;get_api/user/{id}&quot;)
+    @DisplayName(&quot;(EDGE CASE) it should return a 404 error for an invalid id&quot;)
+    public void getUserWithInvalidId_shouldReturnNotFoundError() {
+        // * Assert
+<span class="fc" id="L124">        Long nonExistentId = 0L;</span>
+
+<span class="fc" id="L126">        when(userService.findById(nonExistentId)).thenReturn(null);</span>
+
+        // * Act
+<span class="fc" id="L129">        ResponseEntity&lt;?&gt; result = userController.findById(nonExistentId.toString());</span>
+
+        // * Assert
+<span class="fc" id="L132">        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Test case for deleting a user with a valid ID.
+     * It should return a 200 status code upon successful deletion.
+     */
+    @Test
+    @Tag(&quot;delete_api/user/{id}&quot;)
+    @DisplayName(&quot;(HAPPY PATH) it should delete the user and return a 200 status code&quot;)
+    public void deleteUserWithValidId_shouldReturnOk() {
+        // * Arrange
+<span class="fc" id="L144">        Long userId = 1L;</span>
+<span class="fc" id="L145">        User mockUser = new User();</span>
+<span class="fc" id="L146">        mockUser.setId(userId);</span>
+<span class="fc" id="L147">        mockUser.setEmail(&quot;test@example.com&quot;);</span>
+
+<span class="fc" id="L149">        when(userService.findById(1L)).thenReturn(mockUser);</span>
+
+<span class="fc" id="L151">        UserDetails userDetails = mock(UserDetails.class);</span>
+<span class="fc" id="L152">        when(userDetails.getUsername()).thenReturn(&quot;test@example.com&quot;);</span>
+<span class="fc" id="L153">        SecurityContextHolder.getContext()</span>
+<span class="fc" id="L154">                .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null));</span>
+
+        // * Act
+<span class="fc" id="L157">        ResponseEntity&lt;?&gt; result = userController.save(userId.toString());</span>
+
+        // * Assert
+<span class="fc" id="L160">        assertEquals(HttpStatus.OK, result.getStatusCode());</span>
+<span class="fc" id="L161">    }</span>
+
+    /**
+     * Test case for deleting a user with an unauthorized user.
+     * It should return a 401 status code.
+     */
+    @Test
+    @Tag(&quot;delete_api/user/{id}&quot;)
+    @DisplayName(&quot;(EDGE CASE) it should return a 401 status code for an unauthorized user&quot;)
+    public void deleteUserWithUnauthorizedUser_shouldReturnUnauthorized() {
+        // * Arrange
+<span class="fc" id="L172">        Long userId = 1L;</span>
+<span class="fc" id="L173">        User mockUser = new User();</span>
+<span class="fc" id="L174">        mockUser.setId(userId);</span>
+<span class="fc" id="L175">        mockUser.setEmail(&quot;test@example.com&quot;);</span>
+
+<span class="fc" id="L177">        when(userService.findById(1L)).thenReturn(mockUser);</span>
+
+<span class="fc" id="L179">        UserDetails userDetails = mock(UserDetails.class);</span>
+<span class="fc" id="L180">        when(userDetails.getUsername()).thenReturn(&quot;unauthorized@example.com&quot;);</span>
+<span class="fc" id="L181">        SecurityContextHolder.getContext()</span>
+<span class="fc" id="L182">                .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null));</span>
+
+        // * Act
+<span class="fc" id="L185">        ResponseEntity&lt;?&gt; result = userController.save(userId.toString());</span>
+
+        // * Assert
+<span class="fc" id="L188">        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());</span>
+<span class="fc" id="L189">    }</span>
+
+    /**
+     * Test case for deleting a user with a non existent ID.
+     * It should return a 404 error status code.
+     */
+    @Test
+    @Tag(&quot;delete_api/user/{id}&quot;)
+    @DisplayName(&quot;(EDGE CASE) it should return a 404 error for non existent id&quot;)
+    public void deleteUserWithNonExistentId_shouldReturnNotFoundError() {
+        // * Arrange
+<span class="fc" id="L200">        Long nonExistentId = 0L;</span>
+<span class="fc" id="L201">        when(userService.findById(anyLong())).thenReturn(null);</span>
+
+        // * Act
+<span class="fc" id="L204">        ResponseEntity&lt;?&gt; result = userController.save(nonExistentId.toString());</span>
+
+        // * Assert
+<span class="fc" id="L207">        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Test case for deleting a user with an invalid ID.
+     * It should return a 400 error status code.
+     */
+    @Test
+    @Tag(&quot;delete_api/user/{id}&quot;)
+    @DisplayName(&quot;(EDGE CASE) it should return a 400 error for a bad request&quot;)
+    public void deleteUserWithInvalidId_shouldReturnNotFoundError() {
+        // * Act
+<span class="fc" id="L219">        ResponseEntity&lt;?&gt; result = userController.save(&quot;invalid&quot;);</span>
+
+        // * Assert
+<span class="fc" id="L222">        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());</span>
+<span class="fc" id="L223">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

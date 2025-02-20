@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthEntryPointJwtUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.security.services</a> &gt; <span class="el_source">AuthEntryPointJwtUnitTests.java</span></div><h1>AuthEntryPointJwtUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.security.services;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openclassrooms.starterjwt.security.jwt.AuthEntryPointJwt;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.AuthenticationException;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+<span class="fc" id="L31">public class AuthEntryPointJwtUnitTests {</span>
+
+    @InjectMocks
+    private AuthEntryPointJwt authEntryPointJwt;
+
+    @Test
+    @DisplayName(&quot;Test commence method&quot;)
+    void testCommence() throws IOException, ServletException {
+        // Mocking request
+<span class="fc" id="L40">        HttpServletRequest request = mock(HttpServletRequest.class);</span>
+<span class="fc" id="L41">        when(request.getServletPath()).thenReturn(&quot;/api/test&quot;);</span>
+
+        // Mocking authException
+<span class="fc" id="L44">        AuthenticationException authException = mock(AuthenticationException.class);</span>
+<span class="fc" id="L45">        when(authException.getMessage()).thenReturn(&quot;Unauthorized error&quot;);</span>
+
+        // Mocking response
+<span class="fc" id="L48">        HttpServletResponse response = mock(HttpServletResponse.class);</span>
+
+        // Mocking OutputStream for response
+<span class="fc" id="L51">        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();</span>
+<span class="fc" id="L52">        when(response.getOutputStream()).thenReturn(new MockServletOutputStream(byteArrayOutputStream));</span>
+
+        // Call the method to be tested
+<span class="fc" id="L55">        authEntryPointJwt.commence(request, response, authException);</span>
+
+        // Verify that the response is set up correctly
+<span class="fc" id="L58">        verify(response).setContentType(MediaType.APPLICATION_JSON_VALUE);</span>
+<span class="fc" id="L59">        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);</span>
+
+        // Verify that the body is written to the output stream
+<span class="fc" id="L62">        String expectedBody = &quot;{\&quot;path\&quot;:\&quot;/api/test\&quot;,\&quot;error\&quot;:\&quot;Unauthorized\&quot;,\&quot;message\&quot;:\&quot;Unauthorized error\&quot;,\&quot;status\&quot;:401}&quot;;</span>
+
+<span class="fc" id="L64">        String actualBody = byteArrayOutputStream.toString(&quot;UTF-8&quot;);</span>
+
+<span class="fc" id="L66">        assertEquals(expectedBody, actualBody);</span>
+<span class="fc" id="L67">    }</span>
+
+    // Custom MockServletOutputStream to capture the output stream
+    private static class MockServletOutputStream extends ServletOutputStream {
+        private final OutputStream outputStream;
+
+<span class="fc" id="L73">        public MockServletOutputStream(OutputStream outputStream) {</span>
+<span class="fc" id="L74">            this.outputStream = outputStream;</span>
+<span class="fc" id="L75">        }</span>
+
+        @Override
+        public void write(int b) throws IOException {
+<span class="fc" id="L79">            outputStream.write(b);</span>
+<span class="fc" id="L80">        }</span>
+
+        @Override
+        public boolean isReady() {
+<span class="nc" id="L84">            return true;</span>
+        }
+
+        @Override
+        public void setWriteListener(WriteListener listener) {
+
+<span class="nc" id="L90">        }</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

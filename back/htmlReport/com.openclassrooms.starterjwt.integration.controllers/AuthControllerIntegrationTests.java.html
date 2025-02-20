@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthControllerIntegrationTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.integration.controllers</a> &gt; <span class="el_source">AuthControllerIntegrationTests.java</span></div><h1>AuthControllerIntegrationTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.integration.controllers;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openclassrooms.starterjwt.controllers.AuthController;
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.payload.request.LoginRequest;
+import com.openclassrooms.starterjwt.payload.request.SignupRequest;
+import com.openclassrooms.starterjwt.repository.UserRepository;
+import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
+import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/**
+ * Integration test class for the {@link AuthController}, covering registration
+ * and login functionality.
+ * This class focuses on testing the actual behavior of the API endpoints by
+ * interacting with the complete
+ * Spring application context.
+ *
+ * @implNote This class uses Mockito for mocking dependencies, but it also
+ *           involves the real
+ *           Spring application context for a more comprehensive integration
+ *           test.
+ * @implSpec The tests cover both the happy path scenarios and edge cases,
+ *           asserting the expected outcomes
+ *           for each endpoint.
+ * @implSpec All tests focus on the functionality of the {@link AuthController}
+ *           in handling user authentication
+ *           and registration.
+ * @implNote The class utilizes JUnit 5 and Mockito for testing, along with
+ *           Spring's Test framework for
+ *           integration testing.
+ *
+ * @see UserRepository
+ * @see JwtUtils
+ * @see PasswordEncoder
+ * @see MockMvc
+ *
+ * @author Younes LAHOUITI
+ * @version 1.0
+ * @since 2024-01-05
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+// @AutoConfigureTestDatabase
+<span class="fc" id="L67">public class AuthControllerIntegrationTests {</span>
+
+    /**
+     * The main entry point for integration tests of Spring MVC applications.
+     */
+    @Autowired
+    private MockMvc mockMvc;
+
+    /**
+     * Jackson ObjectMapper for converting Java objects to JSON and vice versa.
+     */
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    /**
+     * MockBean for simulating the UserRepository in the integration tests.
+     */
+    @MockBean
+    private UserRepository userRepository;
+
+    /**
+     * Mocked password encoder for encoding and decoding passwords.
+     */
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    /**
+     * MockBean for simulating the AuthenticationManager in the integration tests.
+     */
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    /**
+     * Integration test for registering and logging in with valid credentials.
+     *
+     * @throws Exception if an error occurs during the test execution.
+     */
+    @Test
+    @Tag(&quot;post_api/auth/register---post_api/auth/login&quot;)
+    @DisplayName(&quot;(HAPPY PATH) it should login the newly registered&quot;)
+    // Test to register and login a new user
+    public void testRegisterAndLoginWithValidCredentials() throws Exception {
+        // * Arrange
+<span class="fc" id="L110">        String email = &quot;test@test.com&quot;;</span>
+<span class="fc" id="L111">        String password = &quot;test!1234&quot;;</span>
+
+<span class="fc" id="L113">        SignupRequest signUpRequest = new SignupRequest();</span>
+
+<span class="fc" id="L115">        signUpRequest.setEmail(email);</span>
+<span class="fc" id="L116">        signUpRequest.setLastName(&quot;Tester&quot;);</span>
+<span class="fc" id="L117">        signUpRequest.setFirstName(&quot;Tester&quot;);</span>
+<span class="fc" id="L118">        signUpRequest.setPassword(password);</span>
+
+        // Stub pour simuler que l'email n'existe pas encore
+<span class="fc" id="L121">        when(userRepository.existsByEmail(email)).thenReturn(false);</span>
+<span class="fc" id="L122">        when(userRepository.save(any())).thenAnswer(invocation -&gt; invocation.getArgument(0));</span>
+<span class="fc" id="L123">        when(passwordEncoder.encode(anyString())).thenReturn(&quot;encodedTestPassword&quot;);</span>
+
+<span class="fc" id="L125">        UserDetailsImpl userDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L126">                .firstName(&quot;Tester&quot;)</span>
+<span class="fc" id="L127">                .lastName(&quot;Tester&quot;)</span>
+<span class="fc" id="L128">                .username(email)</span>
+<span class="fc" id="L129">                .password(password)</span>
+<span class="fc" id="L130">                .build();</span>
+
+<span class="fc" id="L132">        LoginRequest loginRequest = new LoginRequest();</span>
+<span class="fc" id="L133">        loginRequest.setEmail(email);</span>
+<span class="fc" id="L134">        loginRequest.setPassword(password);</span>
+
+<span class="fc" id="L136">        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))</span>
+<span class="fc" id="L137">                .thenReturn(new UsernamePasswordAuthenticationToken(userDetails, null));</span>
+
+        // * Act
+        // * Assert
+<span class="fc" id="L141">        mockMvc.perform(post(&quot;/api/auth/register&quot;)</span>
+<span class="fc" id="L142">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L143">                        .content(objectMapper.writeValueAsString(signUpRequest)))</span>
+<span class="fc" id="L144">                .andExpect(status().isOk())</span>
+<span class="fc" id="L145">                .andExpect(jsonPath(&quot;$.message&quot;).value(&quot;User registered successfully!&quot;));</span>
+
+<span class="fc" id="L147">        mockMvc.perform(post(&quot;/api/auth/login&quot;)</span>
+<span class="fc" id="L148">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L149">                        .content(objectMapper.writeValueAsString(loginRequest)))</span>
+<span class="fc" id="L150">                .andExpect(status().isOk())</span>
+<span class="fc" id="L151">                .andExpect(jsonPath(&quot;$.token&quot;).exists())</span>
+<span class="fc" id="L152">                .andExpect(jsonPath(&quot;$.type&quot;).value(&quot;Bearer&quot;))</span>
+<span class="fc" id="L153">                .andExpect(jsonPath(&quot;$.username&quot;).value(email))</span>
+<span class="fc" id="L154">                .andExpect(jsonPath(&quot;$.firstName&quot;).value(&quot;Tester&quot;))</span>
+<span class="fc" id="L155">                .andExpect(jsonPath(&quot;$.lastName&quot;).value(&quot;Tester&quot;))</span>
+<span class="fc" id="L156">                .andExpect(jsonPath(&quot;$.admin&quot;).value(false));</span>
+<span class="fc" id="L157">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

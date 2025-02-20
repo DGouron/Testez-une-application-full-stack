@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthControllerUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.controllers</a> &gt; <span class="el_source">AuthControllerUnitTests.java</span></div><h1>AuthControllerUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.controllers;
+
+import com.openclassrooms.starterjwt.controllers.AuthController;
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.payload.request.LoginRequest;
+import com.openclassrooms.starterjwt.payload.request.SignupRequest;
+import com.openclassrooms.starterjwt.payload.response.MessageResponse;
+import com.openclassrooms.starterjwt.repository.UserRepository;
+import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
+import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import java.util.Optional;
+
+/**
+ * This class contains test cases for the {@link AuthController} class,
+ * focusing
+ * on API endpoints related to user authentication and registration.
+ *
+ * @implNote This class uses Mockito for mocking dependencies and performs
+ *           tests
+ *           using the Spring MVC Test framework.
+ * @implSpec The tests cover both the happy path scenarios and edge cases,
+ *           asserting the expected outcomes for each endpoint.
+ * @implSpec All tests focus on the functionality of the
+ *           {@link AuthController} in handling teacher-related operations.
+ * @implNote The class utilizes JUnit 5 and Mockito for testing.
+ *
+ * @see UserRepository
+ * @see JwtUtils
+ * @see PasswordEncoder
+ *
+ * @author Younes LAHOUITI
+ * @version 1.0
+ * @since 2024-01-05
+ */
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+@DisplayName(&quot;Auth controller test: api/auth&quot;)
+<span class="fc" id="L56">public class AuthControllerUnitTests {</span>
+    /**
+     * The controller under test, injected with mock dependencies.
+     */
+    @InjectMocks
+    private AuthController authController;
+
+    /**
+     * Mocked authentication manager for simulating user authentication.
+     */
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    /**
+     * Mocked user repository for handling user data during tests.
+     */
+    @Mock
+    private UserRepository userRepository;
+
+    /**
+     * Mocked JWT utility class for working with JSON Web Tokens.
+     */
+    @Mock
+    private JwtUtils jwtUtils;
+
+    /**
+     * Mocked password encoder for encoding and decoding passwords.
+     */
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    /**
+     * Set up the test environment before each test case by initializing the
+     * {@link AuthController}.
+     * This method creates a new instance of the {@code AuthController} with the
+     * provided mock dependencies,
+     * including an authentication manager, password encoder, JWT utility class,
+     * and
+     * user repository.
+     * The initialized controller is then used in each test case for simulating
+     * HTTP
+     * requests and responses.
+     */
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L101">        authController = new AuthController(authenticationManager, passwordEncoder,</span>
+                jwtUtils, userRepository);
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Test case for simulating the successful authentication of a valid user,
+     * expecting a JWT result.
+     *
+     * @throws Exception if there's an error during the test execution.
+     */
+    @Test
+    @Tag(&quot;post_api/auth/login&quot;)
+    @DisplayName(&quot;(HAPPY PATH) it should authenticate the user successfully and return a JWT&quot;)
+    void authenticateValidUser_shouldReturnJwtResponse() throws Exception {
+        // * Arrange
+<span class="fc" id="L116">        UserDetailsImpl userDetails = UserDetailsImpl.builder()</span>
+<span class="fc" id="L117">                .id(1L)</span>
+<span class="fc" id="L118">                .firstName(&quot;Toto&quot;)</span>
+<span class="fc" id="L119">                .lastName(&quot;Toto&quot;)</span>
+<span class="fc" id="L120">                .username(&quot;toto3@toto.com&quot;)</span>
+<span class="fc" id="L121">                .password(&quot;test!1234&quot;)</span>
+<span class="fc" id="L122">                .build();</span>
+
+<span class="fc" id="L124">        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(</span>
+                userDetails, null);
+
+<span class="fc" id="L127">        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(</span>
+<span class="fc" id="L128">                userDetails.getUsername(), userDetails.getPassword())))</span>
+<span class="fc" id="L129">                .thenReturn(authentication);</span>
+<span class="fc" id="L130">        when(jwtUtils.generateJwtToken(authentication)).thenReturn(&quot;jwt&quot;);</span>
+
+<span class="fc" id="L132">        User mockedUser = new User(userDetails.getUsername(), userDetails.getLastName(),</span>
+<span class="fc" id="L133">                userDetails.getFirstName(), userDetails.getPassword(), false);</span>
+
+<span class="fc" id="L135">        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(mockedUser));</span>
+
+<span class="fc" id="L137">        LoginRequest loginRequest = new LoginRequest();</span>
+<span class="fc" id="L138">        loginRequest.setEmail(userDetails.getUsername());</span>
+<span class="fc" id="L139">        loginRequest.setPassword(userDetails.getPassword());</span>
+
+        // * Act
+<span class="fc" id="L142">        ResponseEntity&lt;?&gt; result = authController.authenticateUser(loginRequest);</span>
+
+        // * Assert
+<span class="fc" id="L145">        assertEquals(HttpStatus.OK, result.getStatusCode());</span>
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Test case for simulating the successful registration of a valid user,
+     * expecting a success message result.
+     *
+     * @throws Exception if there's an error during the test execution.
+     */
+    @Test
+    @Tag(&quot;post_api/auth/register&quot;)
+    @DisplayName(&quot;(HAPPY PATH) it should register the user&quot;)
+    void registerValidUser_shouldReturnMessageResponse() throws Exception {
+        // * Arrange
+<span class="fc" id="L159">        SignupRequest signUpRequest = new SignupRequest();</span>
+
+<span class="fc" id="L161">        signUpRequest.setEmail(&quot;toto3@toto.com&quot;);</span>
+<span class="fc" id="L162">        signUpRequest.setLastName(&quot;Toto&quot;);</span>
+<span class="fc" id="L163">        signUpRequest.setFirstName(&quot;Toto&quot;);</span>
+<span class="fc" id="L164">        signUpRequest.setPassword(&quot;test!1234&quot;);</span>
+
+<span class="fc" id="L166">        when(userRepository.existsByEmail(signUpRequest.getEmail())).thenReturn(false);</span>
+
+<span class="fc" id="L168">        when(passwordEncoder.encode(signUpRequest.getPassword())).thenReturn(&quot;encodedPassword&quot;);</span>
+
+<span class="fc" id="L170">        when(userRepository.save(any(User.class))).thenReturn(new User());</span>
+
+<span class="fc" id="L172">        when(userRepository.existsByEmail(signUpRequest.getEmail())).thenReturn(false);</span>
+
+        // * Act
+<span class="fc" id="L175">        ResponseEntity&lt;?&gt; result = authController.registerUser(signUpRequest);</span>
+
+        // * Assert
+<span class="fc" id="L178">        assertEquals(HttpStatus.OK, result.getStatusCode());</span>
+<span class="fc" id="L179">        assertEquals(&quot;User registered successfully!&quot;, ((MessageResponse) result.getBody()).getMessage());</span>
+
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Test case for simulating the registration of an invalid user, expecting a
+     * 400
+     * status code.
+     *
+     * @throws Exception if there's an error during the test execution.
+     */
+    @Test
+    @Tag(&quot;post_api/auth/register&quot;)
+    @DisplayName(&quot;(EDGE CASE) it should not register the user because the sign up request's payload is invalid&quot;)
+    void registerAlreadyRegisteredUser_shouldReturnErrorResponse() throws Exception {
+        // * Arrange
+<span class="fc" id="L195">        SignupRequest signUpRequest = new SignupRequest();</span>
+
+<span class="fc" id="L197">        signUpRequest.setEmail(&quot;yoga@studio.com&quot;);</span>
+<span class="fc" id="L198">        signUpRequest.setLastName(&quot;Admin&quot;);</span>
+<span class="fc" id="L199">        signUpRequest.setFirstName(&quot;Admin&quot;);</span>
+<span class="fc" id="L200">        signUpRequest.setPassword(&quot;test!1234&quot;);</span>
+
+<span class="fc" id="L202">        when(userRepository.existsByEmail(signUpRequest.getEmail())).thenReturn(true);</span>
+
+        // * Act
+<span class="fc" id="L205">        ResponseEntity&lt;?&gt; result = authController.registerUser(signUpRequest);</span>
+
+        // * Assert
+<span class="fc" id="L208">        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());</span>
+<span class="fc" id="L209">        assertEquals(&quot;Error: Email is already taken!&quot;, ((MessageResponse) result.getBody()).getMessage());</span>
+<span class="fc" id="L210">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SessionControllerIntegrationTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.integration.controllers</a> &gt; <span class="el_source">SessionControllerIntegrationTests.java</span></div><h1>SessionControllerIntegrationTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.integration.controllers;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openclassrooms.starterjwt.dto.SessionDto;
+import com.openclassrooms.starterjwt.models.Session;
+import com.openclassrooms.starterjwt.models.Teacher;
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.services.SessionService;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+<span class="fc" id="L42">public class SessionControllerIntegrationTests {</span>
+    /**
+     * MockBean for simulating the AuthenticationManager in the integration tests.
+     */
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    /**
+     * The main entry point for integration tests of Spring MVC applications.
+     */
+    @Autowired
+    private MockMvc mockMvc;
+
+    /**
+     * ObjectMapper for converting Java objects to JSON and vice versa.
+     */
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    /**
+     * Mocked service for simulating interactions with the teacher database.
+     */
+    @MockBean
+    private SessionService sessionService;
+
+    @Test
+    @Tag(&quot;post_api/session/--get_api/session/{id}&quot;)
+    @DisplayName(&quot;(HAPPY PATH) the session should be successfully registered and included in the array of all sessions&quot;)
+    @WithMockUser(username = &quot;yoga@studio.com&quot;, roles = &quot;ADMIN&quot;)
+    public void testSessionCreationAndRetrieval() throws Exception {
+        // * Arrange
+<span class="fc" id="L73">        SessionDto sessionDto = createMockedSessionDto();</span>
+
+<span class="fc" id="L75">        Session mockSession = createMockedSession(sessionDto);</span>
+
+<span class="fc" id="L77">        when(sessionService.create(any(Session.class))).thenReturn(mockSession);</span>
+
+<span class="fc" id="L79">        when(sessionService.getById(69L)).thenReturn(mockSession);</span>
+
+        // * Act
+        // * Assert
+<span class="fc" id="L83">        mockMvc.perform(post(&quot;/api/session&quot;)</span>
+<span class="fc" id="L84">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L85">                        .content(objectMapper.writeValueAsString(sessionDto)))</span>
+<span class="fc" id="L86">                .andExpect(status().isOk());</span>
+
+<span class="fc" id="L88">        mockMvc.perform(get(&quot;/api/session/{id}&quot;, 69L)</span>
+<span class="fc" id="L89">                        .contentType(MediaType.APPLICATION_JSON))</span>
+<span class="fc" id="L90">                .andExpect(status().isOk())</span>
+<span class="fc" id="L91">                .andExpect(jsonPath(&quot;$.name&quot;).value(sessionDto.getName()))</span>
+<span class="fc" id="L92">                .andExpect(jsonPath(&quot;$.description&quot;).value(sessionDto.getDescription()));</span>
+
+<span class="fc" id="L94">    }</span>
+
+    @Test
+    @Tag(&quot;put_api/session/{id}--get_api/session/{id}&quot;)
+    @WithMockUser(username = &quot;yoga@studio.com&quot;, roles = &quot;ADMIN&quot;)
+    public void testSessionUpdateAndRetrieval() throws Exception {
+        // * Arrange
+<span class="fc" id="L101">        SessionDto sessionDto = createMockedSessionDto();</span>
+
+<span class="fc" id="L103">        Session mockSession = createMockedSession(sessionDto);</span>
+
+<span class="fc" id="L105">        when(sessionService.update(any(Long.class), any(Session.class))).thenReturn(mockSession);</span>
+
+<span class="fc" id="L107">        when(sessionService.getById(69L)).thenReturn(mockSession);</span>
+        // * Act
+<span class="fc" id="L109">        mockMvc.perform(put(&quot;/api/session/{id}&quot;, 69L)</span>
+<span class="fc" id="L110">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L111">                        .content(objectMapper.writeValueAsString(sessionDto)))</span>
+<span class="fc" id="L112">                .andExpect(status().isOk());</span>
+
+        // * Assert
+<span class="fc" id="L115">        mockMvc.perform(get(&quot;/api/session/{id}&quot;, 69L)</span>
+<span class="fc" id="L116">                        .contentType(MediaType.APPLICATION_JSON))</span>
+<span class="fc" id="L117">                .andExpect(status().isOk())</span>
+<span class="fc" id="L118">                .andExpect(jsonPath(&quot;$.name&quot;).value(sessionDto.getName()))</span>
+<span class="fc" id="L119">                .andExpect(jsonPath(&quot;$.description&quot;).value(sessionDto.getDescription()));</span>
+<span class="fc" id="L120">    }</span>
+
+    @Test
+    @Tag(&quot;delete_api/session/{id}--get_api/session/{id}&quot;)
+    @WithMockUser(username = &quot;yoga@studio.com&quot;, roles = &quot;ADMIN&quot;)
+    public void testSessionDeletionAndRetrieval() throws Exception {
+        // * Arrange
+<span class="fc" id="L127">        SessionDto sessionDto = createMockedSessionDto();</span>
+
+<span class="fc" id="L129">        Session mockSession = createMockedSession(sessionDto);</span>
+
+<span class="fc" id="L131">        when(sessionService.getById(69L)).thenReturn(mockSession);</span>
+
+        // * Act
+<span class="fc" id="L134">        mockMvc.perform(delete(&quot;/api/session/{id}&quot;, 69L)</span>
+<span class="fc" id="L135">                        .contentType(MediaType.APPLICATION_JSON))</span>
+<span class="fc" id="L136">                .andExpect(status().isOk());</span>
+
+<span class="fc" id="L138">        when(sessionService.getById(69L)).thenReturn(null);</span>
+        // * Assert
+<span class="fc" id="L140">        mockMvc.perform(get(&quot;/api/session/{id}&quot;, 69L)</span>
+<span class="fc" id="L141">                        .contentType(MediaType.APPLICATION_JSON))</span>
+<span class="fc" id="L142">                .andExpect(status().isNotFound());</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Creates a mocked {@code SessionDto} for testing purposes.
+     *
+     * @return A mocked {@code SessionDto} instance.
+     */
+    private SessionDto createMockedSessionDto() {
+<span class="fc" id="L151">        SessionDto sessionDto = new SessionDto();</span>
+<span class="fc" id="L152">        sessionDto.setName(&quot;New INTEGRATION TEST Session&quot;);</span>
+<span class="fc" id="L153">        sessionDto.setDate(new Date());</span>
+<span class="fc" id="L154">        sessionDto.setTeacher_id(1L);</span>
+<span class="fc" id="L155">        sessionDto.setDescription(&quot;New Session Description&quot;);</span>
+<span class="fc" id="L156">        sessionDto.setUsers(Arrays.asList(1L, 2L));</span>
+<span class="fc" id="L157">        return sessionDto;</span>
+    }
+
+    /**
+     * Creates a mocked Teacher based on the provided SessionDto for testing
+     * purposes.
+     *
+     * @param sessionDto The SessionDto containing information for creating the
+     *                   mocked Teacher.
+     * @return A mocked Teacher instance.
+     */
+    private Teacher createMockedTeacher(SessionDto sessionDto) {
+<span class="fc" id="L169">        String isoString = &quot;2023-12-30T10:27:21&quot;;</span>
+<span class="fc" id="L170">        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;</span>
+<span class="fc" id="L171">        LocalDateTime localDateTime = LocalDateTime.parse(isoString, formatter);</span>
+
+<span class="fc" id="L173">        Teacher teacher = new Teacher();</span>
+<span class="fc" id="L174">        teacher.setId(sessionDto.getTeacher_id())</span>
+<span class="fc" id="L175">                .setLastName(&quot;DELAHAYE&quot;)</span>
+<span class="fc" id="L176">                .setFirstName(&quot;Margot&quot;)</span>
+<span class="fc" id="L177">                .setCreatedAt(localDateTime)</span>
+<span class="fc" id="L178">                .setUpdatedAt(localDateTime);</span>
+
+<span class="fc" id="L180">        return teacher;</span>
+    }
+
+    /**
+     * Creates a mocked Session based on the provided {@code SessionDto} for testing
+     * purposes.
+     *
+     * @param sessionDto The SessionDto containing information for creating the
+     *                   mocked Session.
+     * @return A mocked Session instance.
+     */
+    private Session createMockedSession(SessionDto sessionDto) {
+<span class="fc" id="L192">        Teacher teacher = createMockedTeacher(sessionDto);</span>
+
+<span class="fc" id="L194">        User mockedUser1 = new User(&quot;Toto&quot;, &quot;Toto&quot;,</span>
+                &quot;Toto69&quot;, &quot;totoBruv&quot;, false);
+
+<span class="fc" id="L197">        mockedUser1.setId(1L);</span>
+
+<span class="fc" id="L199">        User mockedUser2 = new User(&quot;Toto2&quot;, &quot;Toto2&quot;,</span>
+                &quot;Toto420&quot;, &quot;totoBlud&quot;, false);
+<span class="fc" id="L201">        mockedUser2.setId(2L);</span>
+
+<span class="fc" id="L203">        List&lt;User&gt; arrayOfUsers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L204">        arrayOfUsers.add(mockedUser1);</span>
+<span class="fc" id="L205">        arrayOfUsers.add(mockedUser2);</span>
+
+<span class="fc" id="L207">        Session mockedSession = Session.builder()</span>
+<span class="fc" id="L208">                .id(69L)</span>
+<span class="fc" id="L209">                .name(sessionDto.getName())</span>
+<span class="fc" id="L210">                .teacher(teacher)</span>
+<span class="fc" id="L211">                .users(arrayOfUsers)</span>
+<span class="fc" id="L212">                .description(sessionDto.getDescription())</span>
+<span class="fc" id="L213">                .date(new Date())</span>
+<span class="fc" id="L214">                .build();</span>
+
+<span class="fc" id="L216">        return mockedSession;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

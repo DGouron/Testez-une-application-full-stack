@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserDetailsServiceImplUnitTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.starterjwt.unit.security.services</a> &gt; <span class="el_source">UserDetailsServiceImplUnitTests.java</span></div><h1>UserDetailsServiceImplUnitTests.java</h1><pre class="source lang-java linenums">package com.openclassrooms.starterjwt.unit.security.services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.repository.UserRepository;
+import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+import com.openclassrooms.starterjwt.security.services.UserDetailsServiceImpl;
+
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L29">public class UserDetailsServiceImplUnitTests {</span>
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserDetailsServiceImpl userDetailsService;
+
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L39">        userDetailsService = new UserDetailsServiceImpl(userRepository);</span>
+<span class="fc" id="L40">    }</span>
+
+    /*
+     * Test the loadUserByUsername() method with a valid username.
+     */
+    @Test
+    @Tag(&quot;UserDetailsServiceImpl.LoadUserByUsername&quot;)
+    @DisplayName(&quot;Test loadUserByUsername with valid username&quot;)
+    void testLoadUserByUsernameValidUsername() {
+        // * Arrange
+<span class="fc" id="L50">        User user = new User();</span>
+<span class="fc" id="L51">        user.setId(1L);</span>
+<span class="fc" id="L52">        user.setEmail(&quot;testuser@test.com&quot;);</span>
+<span class="fc" id="L53">        user.setFirstName(&quot;John&quot;);</span>
+<span class="fc" id="L54">        user.setLastName(&quot;Doe&quot;);</span>
+<span class="fc" id="L55">        user.setPassword(&quot;testPassword&quot;);</span>
+
+<span class="fc" id="L57">        when(userRepository.findByEmail(&quot;testuser@test.com&quot;)).thenReturn(Optional.of(user));</span>
+
+        // * Act
+<span class="fc" id="L60">        UserDetails userDetails = userDetailsService.loadUserByUsername(&quot;testuser@test.com&quot;);</span>
+
+        // * Assert
+<span class="fc" id="L63">        assertNotNull(userDetails);</span>
+<span class="fc" id="L64">        assertEquals(&quot;testuser@test.com&quot;, userDetails.getUsername());</span>
+<span class="fc" id="L65">        assertEquals(&quot;John&quot;, ((UserDetailsImpl) userDetails).getFirstName());</span>
+<span class="fc" id="L66">        assertEquals(&quot;Doe&quot;, ((UserDetailsImpl) userDetails).getLastName());</span>
+<span class="fc" id="L67">        assertEquals(&quot;testPassword&quot;, userDetails.getPassword());</span>
+<span class="fc" id="L68">    }</span>
+
+    /*
+     * Test the loadUserByUsername() method with an invalid username.
+     */
+    @Test
+    @Tag(&quot;UserDetailsServiceImpl.LoadUserByUsername&quot;)
+    @DisplayName(&quot;Test loadUserByUsername with invalid username&quot;)
+    void testLoadUserByUsernameInvalidUsername() {
+        // * Arrange
+<span class="fc" id="L78">        when(userRepository.findByEmail(&quot;nonexistentuser@test.com&quot;)).thenReturn(Optional.empty());</span>
+
+        // * Act
+        // * Assert
+<span class="fc" id="L82">        assertThrows(UsernameNotFoundException.class,</span>
+<span class="nc" id="L83">                () -&gt; userDetailsService.loadUserByUsername(&quot;nonexistentuser@test.com&quot;));</span>
+<span class="fc" id="L84">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
