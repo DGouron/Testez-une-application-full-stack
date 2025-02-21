@@ -12,7 +12,7 @@ Ce projet est le backend d'une application de gestion de cours de yoga développ
 
 1. Cloner le projet
 ```bash
-git clone <url-du-projet>
+git clone https://github.com/DGouron/Testez-une-application-full-stack
 ```
 
 2. Configurer la base de données MySQL dans `src/main/resources/application.properties`
