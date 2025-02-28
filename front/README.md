@@ -62,7 +62,7 @@ Pour générer le rapport de couverture E2E :
 npm run e2e:coverage
 ```
 
-Le rapport de couverture E2E sera disponible dans :
+Le rapport de couverture Jest sera disponible dans :
 ```
 coverage/lcov-report/index.html
 ```
