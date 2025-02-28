@@ -64,7 +64,7 @@ npm run e2e:coverage
 
 Le rapport de couverture Jest sera disponible dans :
 ```
-coverage/lcov-report/index.html
+coverage/Jest/lcov-report/index.html
 ```
 
 ## Ressources
